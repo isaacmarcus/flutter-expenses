@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_expenses/widgets/new_transaction.dart';
+import 'package:flutter_expenses/widgets/transaction_list.dart';
 
-import './transaction.dart';
+import 'models/transaction.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,14 +12,40 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.purple,
+        accentColor: Colors.amber,
+        fontFamily: 'Quicksand',
+        appBarTheme: AppBarTheme(
+          textTheme: ThemeData.light().textTheme.copyWith(
+                  headline6: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              )),
+        ),
+        textTheme: ThemeData.light().textTheme.copyWith(
+                headline6: TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            )),
+      ),
       title: "Flutter Expenses App",
       home: MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  final List<Transaction> _transactions = [
+class MyHomePage extends StatefulWidget {
+  // String titleInput;
+  // String amountInput;
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final List<Transaction> _userTransactions = [
     Transaction(
       id: 't1',
       title: 'New Shoes',
@@ -32,71 +60,59 @@ class MyHomePage extends StatelessWidget {
     )
   ];
 
+  void _addTransaction(String title, double amount) {
+    final newTx = Transaction(
+      title: title,
+      amount: amount,
+      date: DateTime.now(),
+      id: DateTime.now().toString(),
+    );
+
+    setState(() {
+      _userTransactions.add(newTx);
+    });
+  }
+
+  void _startAddNewTransaction(BuildContext ctx) {
+    showModalBottomSheet(
+        context: ctx,
+        builder: (bCtx) {
+          return NewTransaction(_addTransaction);
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Flutter Expenses"),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
-          Container(
-            child: Card(
-              child: Text("CHART!"),
-              elevation: 5,
-              color: Colors.blueAccent,
-            ),
-            width: double.infinity,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _startAddNewTransaction(context),
           ),
-          Column(
-            children: _transactions.map((tx) {
-              return Card(
-                child: Row(
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 15,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                          border: Border.all(
-                        color: Colors.purple,
-                        width: 2,
-                      )),
-                      padding: EdgeInsets.all(10),
-                      child: Text(
-                        tx.amount.toString(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                          color: Colors.purple,
-                        ),
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          tx.title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          tx.date.toString(),
-                          style: TextStyle(color: Colors.grey[520]),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          )
         ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          // mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              child: Card(
+                child: Text("CHART!"),
+                elevation: 5,
+                color: Colors.blueAccent,
+              ),
+              width: double.infinity,
+            ),
+            TransactionList(_userTransactions),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () => _startAddNewTransaction(context),
       ),
     );
   }
